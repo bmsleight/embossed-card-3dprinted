@@ -2,3 +2,4 @@
 File to 3d print a machhine or press. Machine to emboss business cards.
 
 Idea from: http://www.thingiverse.com/thing:1942815
+Using: https://github.com/brodykenrick/text_on_OpenSCAD
