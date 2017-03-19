@@ -9,6 +9,18 @@ line_two = "M:07971032605";
 line_three = "BarWap.com";
 text_size = 7;
 
+
+rollerJutting();
+*rollerIndent(); 
+*holder(config=1);
+*holder(config=2);
+
+*machine_print();
+
+*machine();
+
+// ***************************************** //
+
 card_extra_circumference = 5;
 pi = 3.1415;
 
@@ -20,6 +32,7 @@ gear_height = 2;
 
 holder_gap = 0.2;
 holder_thickness = 5;
+h_gap = 0.1;
 
 $fn=180;
 
@@ -29,22 +42,22 @@ module roller()
 {
     difference()
     {
-        cylinder(r=cylinder_radius,h=card_height, center=true);
+%        cylinder(r=cylinder_radius,h=card_height, center=true);
 *        cylinder(d=15,h=card_height*2, center=true);       
     }
 }
 
-module rollerText(gap=0)
+module rollerText(gap=1)
 {
     extrusion_height = gap + emboss_thickness_text;
-    text_on_cylinder(line_one, [0,0,card_height/3], r=cylinder_radius, h=card_height, spacing=1, cylinder_center=true, extrusion_height=extrusion_height, size=text_size);
-    text_on_cylinder(line_two, [0,0,0], r=cylinder_radius, h=card_height, spacing=1, cylinder_center=true, extrusion_height=extrusion_height, size=text_size);
-    text_on_cylinder(line_three, [0,0,-card_height/3], r=cylinder_radius, h=card_height, spacing=1, cylinder_center=true, extrusion_height=extrusion_height, size=text_size);
+ #   text_on_cylinder(line_one, [0,0,card_height/3], r=cylinder_radius, h=card_height, spacing=1, cylinder_center=true, extrusion_height=extrusion_height+1, size=text_size);
+    text_on_cylinder(line_two, [0,0,0], r=cylinder_radius, h=card_height, spacing=1, cylinder_center=true, extrusion_height=extrusion_height+1, size=text_size);
+    text_on_cylinder(line_three, [0,0,-card_height/3], r=cylinder_radius, h=card_height, spacing=1, cylinder_center=true, extrusion_height=extrusion_height+1, size=text_size);
 }
 
 module rollerStop()
 {
-    translate([0, cylinder_radius, 0]) cube([1, 2, card_height], center=true);
+    translate([0, cylinder_radius, 0]) cube([1, 3, card_height], center=true);
 }
 
 module rollerJutting()
@@ -91,7 +104,9 @@ module cutouts(c_gap=0, config=3)
 
 module cutout(c_gap=0)
 {
-    translate([0,0,5/2-0.1-c_gap]) cylinder(h = 5-c_gap, d1 = 20-c_gap*2, d2 = 20-5-c_gap*2, center = true);
+    //    translate([0,0,5/2-0.1-c_gap]) 
+    c_height = 5-c_gap;
+    translate([0,0,c_height/2-0.4]) cylinder(h = c_height, d1 = 20-c_gap*2, d2 = 20-5-c_gap*2, center = true);
 }
 
 
@@ -101,7 +116,10 @@ module gearPair(g_rotate=false)
     translate([0,0,-card_height/2-gear_height*1.125]) gearLink(g_rotate=g_rotate);
 }
 
-module gearLink(g_radius=cylinder_radius+(card_thickness+emboss_thickness_text), g_rotate=false)
+module gearLink(g_radius=cylinder_radius+(card_thickness+emboss_thickness_text/2), g_rotate=false)
+// cylinder_radius+(card_thickness+emboss_thickness_text/2
+// rather than cylinder_radius+(card_thickness/2+emboss_thickness_text/4
+// As we want gears overlapping. 
 {
     render() rotate([180,0,0]) difference()
     {
@@ -160,10 +178,12 @@ module gear(teeth, step, height=0.2) {
     echo(apothem+step/2);
 }
 
-module holder(g_radius=cylinder_radius+(card_thickness/2+emboss_thickness_text/4), space=0, h_gap=0.5)
+module holder(g_radius=cylinder_radius+(card_thickness/2+emboss_thickness_text/4), space=0, h_gap=h_gap, config=3)
 {
-    holderBottom(g_radius, h_gap);
-*    translate([0,0, space]) holderTop(g_radius, h_gap);
+    if(config==1 || config==3)
+       holderBottom(g_radius, h_gap);
+    if(config==2 || config==3)
+       translate([0,0, space]) holderTop(g_radius, h_gap);
 }
 
 module holderBottom(g_radius, h_gap)
@@ -187,9 +207,10 @@ module holderBottom(g_radius, h_gap)
                         translate([-holder_x/2-holder_thickness/2,0,(holder_thickness*4+card_height)/2-holder_thickness/2])  cube(holder_thickness*1.5, center=true);
                 }
                 translate([0,0,(holder_thickness*4+card_height)/2-holder_thickness/2])  holderHoles(holder_x, cubes=0);
-            }            
-            translate([cylinder_radius+(card_thickness/2+emboss_thickness_text/4), 0, -h_gap*2]) cutouts(c_gap=h_gap, config=1);
-            translate([-cylinder_radius-(card_thickness/2+emboss_thickness_text/4), 0, -h_gap*2])  cutouts(c_gap=h_gap, config=1);
+            }
+     // Remove gap was - translate([-cylinder_radius-(card_thickness/2+emboss_thickness_text/4), 0, 0])             
+            translate([cylinder_radius+(card_thickness/2), 0, 0]) cutouts(c_gap=h_gap, config=1);
+            translate([-cylinder_radius-(card_thickness/2), 0,0]) cutouts(c_gap=h_gap, config=1);
         }
         translate([0,-holder_thickness*3,0]) cube([(holder_x+holder_thickness*2)*2, holder_thickness*5, (holder_thickness*4+card_height)*2], center=true);
 
@@ -200,7 +221,7 @@ module holderTop(g_radius, h_gap)
 {
     holder_x = g_radius*4+holder_thickness*2;
     
-    translate([0,0,(card_height+holder_thickness)/2+holder_thickness-holder_gap]) rotate([90,0,0])
+    translate([0,0,(card_height+holder_thickness)/2+holder_thickness-holder_gap]) 
     {
         difference()
         {
@@ -213,9 +234,9 @@ module holderTop(g_radius, h_gap)
             holderHoles(holder_x);
         }
     }
-    
-    translate([cylinder_radius+(card_thickness/2+emboss_thickness_text/4), 0, 0]) cutouts(c_gap=h_gap, config=2);
-    translate([-cylinder_radius-(card_thickness/2+emboss_thickness_text/4), 0, 0])  cutouts(c_gap=h_gap, config=2);
+    // Remove gap was - translate([cylinder_radius+(card_thickness/2+emboss_thickness_text/4), 0, 0]) 
+    translate([cylinder_radius+(card_thickness/2), 0, 0]) cutouts(c_gap=h_gap, config=2);
+    translate([-cylinder_radius-(card_thickness/2), 0, 0])  cutouts(c_gap=h_gap, config=2);
 }
 
 module holderHoles(holder_x, cubes=1)
@@ -230,13 +251,13 @@ module holderHoles(holder_x, cubes=1)
     {
         cylinder(r=holder_thickness/2,h=holder_thickness*4, center=true);
         if (cubes==1)
-            holderHoleCube();
+           holderHoleCube();
     }
 }
 
 module holderHoleCube()
 {
-    translate([0,-holder_thickness,0])  cube([holder_thickness*1.5+0.2,holder_thickness*3,holder_thickness*1.5+0.25], center=true);    
+    translate([0,-holder_thickness/1.5,0])  cube([holder_thickness*1.5+0.2,holder_thickness*3,holder_thickness*1.5+0.2], center=true);    
 }
 
 
@@ -244,16 +265,14 @@ module machine()
 {
     translate([cylinder_radius+(card_thickness/2+emboss_thickness_text/4), 0, 0]) rollerJutting();
     translate([-cylinder_radius-(card_thickness/2+emboss_thickness_text/4), 0, 0]) rollerIndent(); 
-*    holder();
+    holder();
 }
 
 module machine_print()
 {
     translate([cylinder_radius+(card_thickness/2+emboss_thickness_text/4) + 2, 0, 0]) rollerJutting();
     translate([-cylinder_radius-(card_thickness/2+emboss_thickness_text/4) - 2 , 0, 0]) rollerIndent(); 
-    translate([0 , 0, -card_height/2-gear_height]) rotate([90,0,0]) holder(space=holder_thickness*3, h_gap=0.1);
-    
+    translate([0 , 0, -card_height/2-gear_height]) rotate([90,0,0]) holder(space=holder_thickness*3, h_gap=0.1, config=1);   
 }
 
 
-machine();
